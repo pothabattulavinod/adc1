@@ -1,4 +1,4 @@
-name: MP4 to HLS (Video Copy + Telugu 5.1 Audio)
+name: MP4 to HLS (FASTEST - No Re-encode)
 
 on:
   workflow_dispatch:
@@ -21,47 +21,33 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
-      # 3️⃣ Convert MP4 to HLS
-      - name: Convert MP4 to HLS (Video Copy + Telugu 5.1 Audio)
+      # 3️⃣ MP4 → HLS (NO RE-ENCODE)
+      - name: Convert MP4 to HLS (Stream Copy)
         run: |
           set -e
 
           INPUT_URL="https://dlfc201-cdn.dl2cdn.com:183/d/h2e3ss7fv4drifjhrwk66hypqjoxrkylaktrcdregubehukjriz5xc57gkdypfueyqfivzmf/Akhanda_2___40_2025__41__Telugu_DVDScr_-_x264_-_AAC_-_700MB.mp4"
-          OUTPUT_FOLDER="ak2"
-          mkdir -p "$OUTPUT_FOLDER"
-          OUTPUT_PATH="$OUTPUT_FOLDER/playlist.m3u8"
+          OUTPUT_DIR="ak2"
+          mkdir -p "$OUTPUT_DIR"
+          OUTPUT_PLAYLIST="$OUTPUT_DIR/playlist.m3u8"
 
-          echo "🎬 Converting MP4 → HLS..."
+          echo "⚡ FASTEST MODE: copying video + audio"
 
-          # Try Telugu audio first
-          ffmpeg -y -i "$INPUT_URL" \
-            -filter_complex "[0:a:m:language:tel]pan=5.1[aout]" \
+          ffmpeg -y -loglevel info \
+            -i "$INPUT_URL" \
             -map 0:v:0 \
-            -map "[aout]" \
-            -c:v copy \
-            -c:a aac -b:a 384k -ac 6 \
+            -map 0:a:0 \
+            -c copy \
             -f hls \
             -hls_time 10 \
             -hls_playlist_type vod \
-            -hls_segment_filename "$OUTPUT_FOLDER/segment%03d.ts" \
-            "$OUTPUT_PATH" || \
-          {
-            echo "⚠️ Telugu audio not found, using first audio stream..."
-            ffmpeg -y -i "$INPUT_URL" \
-              -map 0:v:0 \
-              -map 0:a:0 \
-              -c:v copy \
-              -c:a aac -b:a 384k -ac 6 \
-              -f hls \
-              -hls_time 10 \
-              -hls_playlist_type vod \
-              -hls_segment_filename "$OUTPUT_FOLDER/segment%03d.ts" \
-              "$OUTPUT_PATH"
-          }
+            -hls_flags independent_segments \
+            -hls_segment_filename "$OUTPUT_DIR/segment%03d.ts" \
+            "$OUTPUT_PLAYLIST"
 
-          echo "✅ HLS output created at $OUTPUT_PATH"
+          echo "✅ DONE → $OUTPUT_PLAYLIST"
 
-      # 4️⃣ Commit and push
+      # 4️⃣ Commit and push output
       - name: Commit and push HLS output
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
@@ -72,7 +58,7 @@ jobs:
           git add ak2
 
           if ! git diff-index --quiet HEAD; then
-            git commit -m "Add HLS output (MP4 → HLS) [skip ci]"
+            git commit -m "Add FAST HLS (no re-encode) [skip ci]"
           else
             echo "No changes to commit."
           fi
@@ -80,3 +66,4 @@ jobs:
           git remote remove origin || true
           git remote add origin https://x-access-token:${GH_PAT}@github.com/pothabattulavinod/adc1.git
           git push origin HEAD:main
+
