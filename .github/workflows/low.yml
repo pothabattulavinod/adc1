@@ -27,7 +27,7 @@ jobs:
           set -e
 
           INPUT_URL="https://cdn.telugudub.store/Andhra_King_Taluka_%282025%29_Telugu_720p.mkv"
-          OUTPUT_FOLDER="akt"
+          OUTPUT_FOLDER="aktl"
           mkdir -p "$OUTPUT_FOLDER"
           OUTPUT_PATH="$OUTPUT_FOLDER/playlist.m3u8"
 
@@ -78,7 +78,7 @@ jobs:
           git config --global user.name "pothabattulavinod"
           git config --global user.email "vinodyadavpothabattula666@gmail.com"
 
-          git add akt
+          git add aktl
 
           if ! git diff-index --quiet HEAD; then
             git commit -m "Add HLS (video ~500 MB + Telugu 5.1 audio) [skip ci]"
