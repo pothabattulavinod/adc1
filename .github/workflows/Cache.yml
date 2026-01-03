@@ -1,0 +1,33 @@
+
+name: Clear Runner Data
+
+on:
+  workflow_dispatch:
+
+jobs:
+  clean_runner:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clear runner temp folder
+        run: |
+          echo "🧹 Cleaning RUNNER_TEMP folder"
+          sudo rm -rf "$RUNNER_TEMP/*"
+          echo "✅ RUNNER_TEMP cleared"
+
+      - name: Clear runner tools folder
+        run: |
+          echo "🧹 Cleaning RUNNER_TOOL_CACHE folder"
+          sudo rm -rf "$RUNNER_TOOL_CACHE/*"
+          echo "✅ RUNNER_TOOL_CACHE cleared"
+
+      - name: Clear /tmp folder
+        run: |
+          echo "🧹 Cleaning /tmp folder"
+          sudo rm -rf /tmp/*
+          df -h /tmp
+          echo "✅ /tmp cleared"
+
+      - name: Confirm cleanup
+        run: |
+          echo "✅ Runner temp and tool cache folders cleared."
